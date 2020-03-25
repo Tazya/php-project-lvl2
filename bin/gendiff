@@ -1,0 +1,16 @@
+#!/usr/bin/env php
+
+<?php
+
+use function gendiff\cli\run;
+
+$autoloadPathLocal = __DIR__ . '/../vendor/autoload.php';
+$autoloadPathGlobal = __DIR__ . '/../../../autoload.php';
+
+if (file_exists($autoloadPathLocal)) {
+    require_once $autoloadPathLocal;
+} else {
+    require_once $autoloadPathGlobal;
+}
+
+run();
