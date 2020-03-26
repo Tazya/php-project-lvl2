@@ -2,6 +2,8 @@
 
 namespace gendiff\cli;
 
+use function gendiff\differ\generateDiff;
+
 const DOC = "
 Generate Differences
 
@@ -24,4 +26,9 @@ function run()
     ];
 
     $args = \Docopt::handle(DOC, $params);
+
+    $firstFile = $args['<firstFile>'];
+    $secondFile = $args['<secondFile>'];
+    print_r(generateDiff($firstFile, $secondFile));
+    //print_r($secondFile);
 }

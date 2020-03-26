@@ -16,7 +16,8 @@
     ],
     "autoload": {
         "files": [
-            "src/cli.php"
+            "src/cli.php",
+            "src/differ.php"
         ]
     },
     "require": {
