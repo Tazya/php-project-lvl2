@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "db3097b7a3a9b669152377a6f938608a",
+    "content-hash": "303ed051055f3641356891bfedf5ac02",
     "packages": [
         {
             "name": "docopt/docopt",
@@ -60,12 +60,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/squizlabs/PHP_CodeSniffer.git",
-                "reference": "caddfdea6fc48f30f6a1b0ffe3b91e761bbefabf"
+                "reference": "7c406b75a4e53a50aa1eba2d3dda28e3d55f9cfe"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/squizlabs/PHP_CodeSniffer/zipball/caddfdea6fc48f30f6a1b0ffe3b91e761bbefabf",
-                "reference": "caddfdea6fc48f30f6a1b0ffe3b91e761bbefabf",
+                "url": "https://api.github.com/repos/squizlabs/PHP_CodeSniffer/zipball/7c406b75a4e53a50aa1eba2d3dda28e3d55f9cfe",
+                "reference": "7c406b75a4e53a50aa1eba2d3dda28e3d55f9cfe",
                 "shasum": ""
             },
             "require": {
@@ -103,7 +103,7 @@
                 "phpcs",
                 "standards"
             ],
-            "time": "2020-03-16T21:40:24+00:00"
+            "time": "2020-03-26T03:48:01+00:00"
         }
     ],
     "aliases": [],
