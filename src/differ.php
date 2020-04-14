@@ -15,25 +15,37 @@ function getPath($fileName)
 
 function findDifferences($firstProperties, $secondProperties)
 {
+    $firstPropertiesNormalized = array_map(function ($property) {
+        return is_bool($property) ? 'true' : $property;
+    }, $firstProperties);
+
+    $secondPropertiesNormalized = array_map(function ($property) {
+        return is_bool($property) ? 'true' : $property;
+    }, $secondProperties);
+    
     $allKeys = array_keys(array_merge($firstProperties, $secondProperties));
 
-    $differences = array_reduce($allKeys, function ($carry, $key) use ($firstProperties, $secondProperties) {
-        $firstProperty = isset($firstProperties[$key]) ? $firstProperties[$key] : null;
-        $secondProperty = isset($secondProperties[$key]) ? $secondProperties[$key] : null;
+    $differences = array_reduce(
+        $allKeys,
+        function ($carry, $key) use ($firstPropertiesNormalized, $secondPropertiesNormalized) {
+            $firstProperty = isset($firstPropertiesNormalized[$key]) ? $firstPropertiesNormalized[$key] : null;
+            $secondProperty = isset($secondPropertiesNormalized[$key]) ? $secondPropertiesNormalized[$key] : null;
+        
+            if ($firstProperty === $secondProperty) {
+                $carry[] = "$key: $firstProperty";
+            } elseif ($firstProperty === null && $secondProperty !== null) {
+                $carry[] = "+ $key: $secondProperty";
+            } elseif ($firstProperty !== null && $secondProperty === null) {
+                $carry[] = "- $key: $firstProperty";
+            } else {
+                $carry[] = "+ $key: $secondProperty";
+                $carry[] = "- $key: $firstProperty";
+            }
 
-        if ($firstProperty === $secondProperty) {
-            $carry[] = "$key: $firstProperty";
-        } elseif ($firstProperty === null && $secondProperty !== null) {
-            $carry[] = "+ $key: $secondProperty";
-        } elseif ($firstProperty !== null && $secondProperty === null) {
-            $carry[] = "- $key: $firstProperty";
-        } else {
-            $carry[] = "- $key: $firstProperty";
-            $carry[] = "+ $key: $secondProperty";
-        }
-
-        return $carry;
-    }, []);
+            return $carry;
+        },
+        []
+    );
 
     return $differences;
 }
@@ -55,6 +67,6 @@ function generateDiff(string $firstFile, string $secondFile)
     $differences = findDifferences($firstProperties, $secondProperties);
 
     return array_reduce($differences, function ($carry, $property) {
-        return "$carry $property\n";
+        return "{$carry}{$property}\n";
     }, '');
 }
