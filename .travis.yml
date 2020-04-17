@@ -1,7 +1,3 @@
-env:
-  global:
-    - CC_TEST_REPORTER_ID=f0a6c9d62856e4e0a0c1ed79c69847c4fda5d7067d4fd2e5ccf5b30fa7ebee6e
-
 language: php
 
 php:
