@@ -8,32 +8,37 @@ use function gendiff\differ\generateDiff;
 
 class DiffTest extends TestCase
 {
-    protected $simpleConfigPath;
-    protected $changedSimpleConfigPath;
+    protected $jsonConfigPath;
+    protected $changedJsonConfigPath;
+    protected $yamlConfigPath;
+    protected $changedYamlConfigPath;
 
     protected function setUp(): void
     {
-        $this->simpleConfigPath = "tests/fixtures/simpleConfig.json";
-        $this->changedSimpleConfigPath = "tests/fixtures/changedSimpleConfig.json";
+        $this->jsonConfigPath = "tests/fixtures/before.json";
+        $this->changedJsonConfigPath = "tests/fixtures/after.json";
+        $this->yamlConfigPath = "tests/fixtures/before.yml";
+        $this->changedYamlConfigPath = "tests/fixtures/after.yml";
     }
 
     public function testGenerateDiffFileNotFound()
     {
 
         $path = "tests/fixtures/notExist.json";
-        $expected = "File $path cannot be found!\n";
 
-        $diff = generateDiff($path, $this->simpleConfigPath);
-
-        $this->assertSame($expected, $diff);
+        $this->expectExceptionMessage("File $path not found!\n");
+        $diffJson = generateDiff($path, $this->jsonConfigPath);
     }
 
     public function testGenerateDiffWithoutChanges()
     {
         $expected = "host: hexlet.io\ntimeout: 50\nproxy: 123.234.53.22\n";
-        $diff = generateDiff($this->simpleConfigPath, $this->simpleConfigPath);
 
-        $this->assertSame($expected, $diff);
+        $diffJson = generateDiff($this->jsonConfigPath, $this->jsonConfigPath);
+        $diffYaml = generateDiff($this->yamlConfigPath, $this->yamlConfigPath);
+
+        $this->assertSame($expected, $diffJson);
+        $this->assertSame($expected, $diffYaml);
     }
 
     public function testGenerateDiffWithChanges()
@@ -43,8 +48,11 @@ class DiffTest extends TestCase
 - timeout: 50
 - proxy: 123.234.53.22
 + verbose: true\n";
-        $diff = generateDiff($this->simpleConfigPath, $this->changedSimpleConfigPath);
+        
+        $diffJson = generateDiff($this->jsonConfigPath, $this->changedJsonConfigPath);
+        $diffYaml = generateDiff($this->yamlConfigPath, $this->changedYamlConfigPath);
 
-        $this->assertSame($expected, $diff);
+        $this->assertSame($expected, $diffJson);
+        $this->assertSame($expected, $diffYaml);
     }
 }

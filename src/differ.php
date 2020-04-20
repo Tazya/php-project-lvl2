@@ -2,6 +2,9 @@
 
 namespace gendiff\differ;
 
+use function gendiff\parsers\parseJson;
+use function gendiff\parsers\parseYaml;
+
 function getPath($fileName)
 {
     $normalized = str_replace('\\', '/', $fileName);
@@ -56,17 +59,31 @@ function generateDiff(string $firstFile, string $secondFile)
     $secondPath = getPath($secondFile);
 
     if (!$firstPath) {
-        return "File $firstFile cannot be found!\n";
+        throw new \Exception("File $firstFile not found!\n");
     }
     if (!$secondPath) {
-        return "File $secondFile cannot be found!\n";
+        throw new \Exception("File $secondFile not found!\n");
     }
 
-    $firstProperties = json_decode(file_get_contents($firstPath), true);
-    $secondProperties = json_decode(file_get_contents($secondPath), true);
+    $firstProperties = parseFile($firstPath);
+    $secondProperties = parseFile($secondPath);
+
     $differences = findDifferences($firstProperties, $secondProperties);
 
     return array_reduce($differences, function ($carry, $property) {
         return "{$carry}{$property}\n";
     }, '');
+}
+
+function parseFile($path)
+{
+    $ext = pathinfo($path, PATHINFO_EXTENSION);
+
+    if ($ext === 'json') {
+        return parseJson(file_get_contents($path));
+    } elseif ($ext === 'yml') {
+        return parseYaml(file_get_contents($path));
+    } else {
+        throw new \Exception("File $path has a unknown extension: $ext");
+    }
 }

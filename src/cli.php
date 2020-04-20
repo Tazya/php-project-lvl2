@@ -29,6 +29,13 @@ function run()
 
     $firstFile = $args['<firstFile>'];
     $secondFile = $args['<secondFile>'];
-    print_r(generateDiff($firstFile, $secondFile));
-    //print_r($secondFile);
+
+    try {
+        $diff = generateDiff($firstFile, $secondFile);
+    } catch (\Exception $e) {
+        echo($e);
+        return;
+    }
+
+    print_r($diff);
 }
