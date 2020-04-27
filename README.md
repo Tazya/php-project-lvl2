@@ -16,3 +16,7 @@ PHP version > 7.1.0 is requred
 ## JSON Files compare
 Use ```gendiff <file1> <file2>``` command to compare configs
 [![asciicast](https://asciinema.org/a/313588.svg)](https://asciinema.org/a/313588)
+
+## YAML Files compare
+Use ```gendiff <file1> <file2>``` command to compare configs
+[![asciicast](https://asciinema.org/a/323441.svg)](https://asciinema.org/a/323441)
