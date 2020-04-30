@@ -13,10 +13,10 @@ composer global require tazya/gendiff:dev-master
 ```  
 PHP version > 7.1.0 is requred   
 
-## JSON Files compare
+## Basic JSON and YAML config files compare
 Use ```gendiff <file1> <file2>``` command to compare configs
-[![asciicast](https://asciinema.org/a/313588.svg)](https://asciinema.org/a/313588)
+[![asciicast](https://asciinema.org/a/325467.svg)](https://asciinema.org/a/325467)
 
-## YAML Files compare
+## Recursive config files compare
 Use ```gendiff <file1> <file2>``` command to compare configs
-[![asciicast](https://asciinema.org/a/323441.svg)](https://asciinema.org/a/323441)
+[![asciicast](https://asciinema.org/a/325468.svg)](https://asciinema.org/a/325468)
