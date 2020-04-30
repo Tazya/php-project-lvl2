@@ -52,8 +52,7 @@ class DiffTest extends TestCase
         two: ex
     }
     three: bex
-}"
-;
+}";
         $this->assertSame('one', normalizeValueForRender('one', 1));
         $this->assertSame('true', normalizeValueForRender(true, 1));
         $this->assertSame('false', normalizeValueForRender(false, 1));
