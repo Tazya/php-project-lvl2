@@ -16,65 +16,6 @@ function getPath($fileName)
     return realpath($currentDirectory . $fileName);
 }
 
-function findDifferences($firstProperties, $secondProperties)
-{
-    $firstPropertiesNormalized = array_map(function ($property) {
-        return is_bool($property) ? 'true' : $property;
-    }, $firstProperties);
-
-    $secondPropertiesNormalized = array_map(function ($property) {
-        return is_bool($property) ? 'true' : $property;
-    }, $secondProperties);
-    
-    $allKeys = array_keys(array_merge($firstProperties, $secondProperties));
-
-    $differences = array_reduce(
-        $allKeys,
-        function ($carry, $key) use ($firstPropertiesNormalized, $secondPropertiesNormalized) {
-            $firstProperty = isset($firstPropertiesNormalized[$key]) ? $firstPropertiesNormalized[$key] : null;
-            $secondProperty = isset($secondPropertiesNormalized[$key]) ? $secondPropertiesNormalized[$key] : null;
-        
-            if ($firstProperty === $secondProperty) {
-                $carry[] = "$key: $firstProperty";
-            } elseif ($firstProperty === null && $secondProperty !== null) {
-                $carry[] = "+ $key: $secondProperty";
-            } elseif ($firstProperty !== null && $secondProperty === null) {
-                $carry[] = "- $key: $firstProperty";
-            } else {
-                $carry[] = "+ $key: $secondProperty";
-                $carry[] = "- $key: $firstProperty";
-            }
-
-            return $carry;
-        },
-        []
-    );
-
-    return $differences;
-}
-
-function generateDiff(string $firstFile, string $secondFile)
-{
-    $firstPath = getPath($firstFile);
-    $secondPath = getPath($secondFile);
-
-    if (!$firstPath) {
-        throw new \Exception("File $firstFile not found!\n");
-    }
-    if (!$secondPath) {
-        throw new \Exception("File $secondFile not found!\n");
-    }
-
-    $firstProperties = parseFile($firstPath);
-    $secondProperties = parseFile($secondPath);
-
-    $differences = findDifferences($firstProperties, $secondProperties);
-
-    return array_reduce($differences, function ($carry, $property) {
-        return "{$carry}{$property}\n";
-    }, '');
-}
-
 function parseFile($path)
 {
     $ext = pathinfo($path, PATHINFO_EXTENSION);
@@ -87,7 +28,6 @@ function parseFile($path)
         throw new \Exception("File $path has a unknown extension: $ext");
     }
 }
-
 
 function findDiff($firstProperty, $secondProperty)
 {
@@ -140,4 +80,110 @@ function makeAst($firstProperties, $secondProperties)
 
     $ast = $iter($firstProperties, $secondProperties);
     return $ast['children'];
+}
+
+function normalizeValueForRender($rawValue, $depth)
+{
+    $iterFormatArray = function ($array, $depth) use (&$iterFormatArray) {
+        $indentStrInn = makeIndent($depth + 1);
+        $indentStrOuter = makeIndent($depth);
+        $formattedArray = array_map(function ($value, $key) use (&$iterFormatArray, $indentStrInn, $depth) {
+            if (is_array($value)) {
+                return "$indentStrInn$key: " . $iterFormatArray($value, $depth + 1);
+            } else {
+                return "$indentStrInn$key: $value";
+            }
+        }, $array, array_keys($array));
+
+        $formattedStr = implode("\n", $formattedArray);
+        return "{\n$formattedStr\n$indentStrOuter}";
+    };
+
+
+    if (is_bool($rawValue)) {
+        $normalizedValue = $rawValue ? 'true' : 'false';
+    } elseif (is_array($rawValue)) {
+        $normalizedValue = $iterFormatArray($rawValue, $depth);
+    } else {
+        $normalizedValue = $rawValue;
+    }
+
+    return $normalizedValue;
+}
+
+function makeIndent($depth, $offset = 0)
+{
+    $indent = 4;
+    $spacesCount = $indent * $depth + $offset;
+    if ($spacesCount < 0) {
+        throw new \Exception("Indent cannot be less than 0\n");
+    }
+    return implode("", array_fill(0, $spacesCount, " "));
+}
+
+function renderDiff($ast)
+{
+    $iter = function ($ast, $depth = 1) use (&$iter) {
+        $diffs = array_map(function ($elem) use (&$iter, $depth) {
+            $indentStr = makeIndent($depth);
+            if (isset($elem['children'])) {
+                return $indentStr . $elem['name'] . ": " . $iter($elem['children'], $depth + 1);
+            }
+
+            switch ($elem['diff']) {
+                case 'same':
+                    $prefix = '  ';
+                    break;
+                case 'deleted':
+                    $prefix = '- ';
+                    break;
+                case 'added':
+                    $prefix = '+ ';
+                    break;
+                default:
+                    # nothing
+                    break;
+            }
+
+            $name = $elem['name'];
+            $value = normalizeValueForRender($elem['value'], $depth);
+
+            $indentStr2 = makeIndent($depth, -2);
+            if ($elem['diff'] === 'changed') {
+                $oldValue = normalizeValueForRender($elem['oldValue'], $depth);
+                $result = "$indentStr2+ $name: $value\n$indentStr2- $name: $oldValue";
+            } else {
+                $result = "$indentStr2$prefix$name: $value";
+            }
+
+            return $result;
+        }, $ast);
+
+        $shortIndentStr = makeIndent($depth - 1);
+        return "{\n" . implode("\n", $diffs) . "\n$shortIndentStr}";
+    };
+
+    $diff = $iter($ast);
+    return $diff . "\n";
+}
+
+function generateDiff(string $firstFile, string $secondFile)
+{
+    $firstPath = getPath($firstFile);
+    $secondPath = getPath($secondFile);
+
+    if (!$firstPath) {
+        throw new \Exception("File $firstFile not found!\n");
+    }
+    if (!$secondPath) {
+        throw new \Exception("File $secondFile not found!\n");
+    }
+
+    $firstProperties = parseFile($firstPath);
+    $secondProperties = parseFile($secondPath);
+
+    $ast = makeAst($firstProperties, $secondProperties);
+    $diff = renderDiff($ast);
+
+    return $diff;
 }

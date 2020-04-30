@@ -4,9 +4,13 @@ namespace gendiff\Tests;
 
 use PHPUnit\Framework\TestCase;
 
+use function gendiff\differ\findDiff;
 use function gendiff\differ\generateDiff;
 use function gendiff\differ\makeAst;
+use function gendiff\differ\normalizeValueForRender;
+use function gendiff\differ\makeIndent;
 use function gendiff\differ\parseFile;
+use function gendiff\differ\renderDiff;
 
 class DiffTest extends TestCase
 {
@@ -28,6 +32,44 @@ class DiffTest extends TestCase
         $this->changedRecursiveJsonConfigPath = "tests/fixtures/recursiveAfter.json";
     }
 
+    public function testFindDiff()
+    {
+        $expected1 = ['diff' => 'same', 'value' => 'one', 'oldValue' => ''];
+        $expected2 = ['diff' => 'added', 'value' => 'add', 'oldValue' => ''];
+        $expected3 = ['diff' => 'deleted', 'value' => 'delete', 'oldValue' => ''];
+        $expected4 = ['diff' => 'changed', 'value' => 2, 'oldValue' => 0];
+
+        $this->assertSame($expected1, findDiff('one', 'one'));
+        $this->assertSame($expected2, findDiff(null, 'add'));
+        $this->assertSame($expected3, findDiff('delete', null));
+        $this->assertSame($expected4, findDiff(0, 2));
+    }
+
+    public function testNormalizeValueForRender()
+    {
+        $expected = "{
+    one: {
+        two: ex
+    }
+    three: bex
+}"
+;
+        $this->assertSame('one', normalizeValueForRender('one', 1));
+        $this->assertSame('true', normalizeValueForRender(true, 1));
+        $this->assertSame('false', normalizeValueForRender(false, 1));
+        $this->assertSame($expected, normalizeValueForRender(['one' => ['two' => 'ex'], 'three' => 'bex'], 0));
+    }
+
+    public function testMakeIndent()
+    {
+        $this->assertSame("", makeIndent(0));
+        $this->assertSame("    ", makeIndent(1));
+        $this->assertSame("  ", makeIndent(1, -2));
+
+        $this->expectExceptionMessage("Indent cannot be less than 0\n");
+        makeIndent(0, -2);
+    }
+
     public function testGenerateDiffFileNotFound()
     {
 
@@ -37,24 +79,16 @@ class DiffTest extends TestCase
         $diffJson = generateDiff($path, $this->jsonConfigPath);
     }
 
-    public function testGenerateDiffWithoutChanges()
+    public function testGenerateDiff()
     {
-        $expected = "host: hexlet.io\ntimeout: 50\nproxy: 123.234.53.22\n";
-
-        $diffJson = generateDiff($this->jsonConfigPath, $this->jsonConfigPath);
-        $diffYaml = generateDiff($this->yamlConfigPath, $this->yamlConfigPath);
-
-        $this->assertSame($expected, $diffJson);
-        $this->assertSame($expected, $diffYaml);
-    }
-
-    public function testGenerateDiffWithChanges()
-    {
-        $expected = "host: hexlet.io
-+ timeout: 20
-- timeout: 50
-- proxy: 123.234.53.22
-+ verbose: true\n";
+        $expected = "{
+    host: hexlet.io
+  + timeout: 20
+  - timeout: 50
+  - proxy: 123.234.53.22
+  + verbose: true
+}
+";
         
         $diffJson = generateDiff($this->jsonConfigPath, $this->changedJsonConfigPath);
         $diffYaml = generateDiff($this->yamlConfigPath, $this->changedYamlConfigPath);
@@ -134,5 +168,56 @@ class DiffTest extends TestCase
         
         $ast = makeAst($firstProperties, $secondProperties);
         $this->assertSame($expected, $ast);
+    }
+
+    public function testRenderDiff()
+    {
+        $expected = "{
+    host: hexlet.io
+  + timeout: 20
+  - timeout: 50
+  - proxy: 123.234.53.22
+  + verbose: true
+}
+";
+        
+        $expectedRecursive = "{
+    common: {
+        setting1: Value 1
+      - setting2: 200
+        setting3: true
+      - setting6: {
+            key: value
+        }
+      + setting4: blah blah
+      + setting5: {
+            key5: value5
+        }
+    }
+    group1: {
+      + baz: bars
+      - baz: bas
+        foo: bar
+    }
+  - group2: {
+        abc: 12345
+    }
+  + group3: {
+        fee: 100500
+    }
+}
+";
+
+        $firstProperties = parseFile($this->jsonConfigPath);
+        $secondProperties = parseFile($this->changedJsonConfigPath);
+        $ast = makeAst($firstProperties, $secondProperties);
+        $renderedDiff = renderDiff($ast);
+        $this->assertSame($expected, $renderedDiff);
+
+        $firstRecursiveProperties = parseFile($this->recursiveJsonConfigPath);
+        $secondRecursiveProperties = parseFile($this->changedRecursiveJsonConfigPath);
+        $astRecursive = makeAst($firstRecursiveProperties, $secondRecursiveProperties);
+        $renderedRecursiveDiff = renderDiff($astRecursive);
+        $this->assertSame($expectedRecursive, $renderedRecursiveDiff);
     }
 }
