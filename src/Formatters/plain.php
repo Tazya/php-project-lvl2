@@ -19,10 +19,7 @@ function renderPlainDiff($ast)
 {
     $iter = function ($ast, $parents = []) use (&$iter) {
         $filteredAst = array_filter($ast, function ($elem) {
-            if (isset($elem['diff']) && $elem['diff'] === "same") {
-                return false;
-            }
-            return true;
+            return !(isset($elem['diff']) && $elem['diff'] === "same");
         });
 
         $diffs = array_map(function ($elem) use (&$iter, $parents) {
@@ -49,11 +46,13 @@ function renderPlainDiff($ast)
             }
 
             if ($elem['diff'] === 'same') {
-                return '';
+                $result = '';
             }
 
             $parentsStr = implode('.', $newParents);
-            return "Property '$parentsStr' was $elemDiff";
+            $result = "Property '$parentsStr' was $elemDiff";
+
+            return $result;
         }, $filteredAst);
 
         return implode("\n", $diffs);
