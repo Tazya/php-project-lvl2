@@ -20,3 +20,7 @@ Use ```gendiff <file1> <file2>``` command to compare configs
 ## Recursive config files compare
 Use ```gendiff <file1> <file2>``` command to compare configs
 [![asciicast](https://asciinema.org/a/325468.svg)](https://asciinema.org/a/325468)
+
+## Format options usage
+Use ```gendiff --format <format> <file1> <file2>``` command to compare configs. Allow 'pretty' and 'plain' formats  
+[![asciicast](https://asciinema.org/a/325822.svg)](https://asciinema.org/a/325822)
