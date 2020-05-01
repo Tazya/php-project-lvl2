@@ -6,10 +6,8 @@ use PHPUnit\Framework\TestCase;
 
 use function gendiff\differ\findDiff;
 use function gendiff\differ\generateDiff;
+use function gendiff\parsers\parseFile;
 use function gendiff\differ\makeAst;
-use function gendiff\differ\normalizeValueForRender;
-use function gendiff\differ\makeIndent;
-use function gendiff\differ\parseFile;
 use function gendiff\differ\renderDiff;
 
 class DiffTest extends TestCase
@@ -45,40 +43,7 @@ class DiffTest extends TestCase
         $this->assertSame($expected4, findDiff(0, 2));
     }
 
-    public function testNormalizeValueForRender()
-    {
-        $expected = "{
-    one: {
-        two: ex
-    }
-    three: bex
-}";
-        $this->assertSame('one', normalizeValueForRender('one', 1));
-        $this->assertSame('true', normalizeValueForRender(true, 1));
-        $this->assertSame('false', normalizeValueForRender(false, 1));
-        $this->assertSame($expected, normalizeValueForRender(['one' => ['two' => 'ex'], 'three' => 'bex'], 0));
-    }
-
-    public function testMakeIndent()
-    {
-        $this->assertSame("", makeIndent(0));
-        $this->assertSame("    ", makeIndent(1));
-        $this->assertSame("  ", makeIndent(1, -2));
-
-        $this->expectExceptionMessage("Indent cannot be less than 0\n");
-        makeIndent(0, -2);
-    }
-
-    public function testGenerateDiffFileNotFound()
-    {
-
-        $path = "tests/fixtures/notExist.json";
-
-        $this->expectExceptionMessage("File $path not found!\n");
-        $diffJson = generateDiff($path, $this->jsonConfigPath);
-    }
-
-    public function testGenerateDiff()
+    public function testGenerateDiffFlat()
     {
         $expected = "{
     host: hexlet.io
@@ -88,12 +53,68 @@ class DiffTest extends TestCase
   + verbose: true
 }
 ";
+
+        $expectedPlain = "Property 'timeout' was changed. From '50' to '20'
+Property 'proxy' was removed
+Property 'verbose' was added with value: 'true'
+";
         
         $diffJson = generateDiff($this->jsonConfigPath, $this->changedJsonConfigPath);
         $diffYaml = generateDiff($this->yamlConfigPath, $this->changedYamlConfigPath);
 
+        $plainDiffJson = generateDiff($this->jsonConfigPath, $this->changedJsonConfigPath, "plain");
+        $plainDiffYaml = generateDiff($this->yamlConfigPath, $this->changedYamlConfigPath, "plain");
+
         $this->assertSame($expected, $diffJson);
         $this->assertSame($expected, $diffYaml);
+
+        $this->assertSame($expectedPlain, $plainDiffJson);
+        $this->assertSame($expectedPlain, $plainDiffYaml);
+    }
+
+    public function testGenerateDiffRecursive()
+    {
+        $expected = "{
+    common: {
+        setting1: Value 1
+      - setting2: 200
+        setting3: true
+      - setting6: {
+            key: value
+        }
+      + setting4: blah blah
+      + setting5: {
+            key5: value5
+        }
+    }
+    group1: {
+      + baz: bars
+      - baz: bas
+        foo: bar
+    }
+  - group2: {
+        abc: 12345
+    }
+  + group3: {
+        fee: 100500
+    }
+}
+";
+
+        $expectedPlain = "Property 'common.setting2' was removed
+Property 'common.setting6' was removed
+Property 'common.setting4' was added with value: 'blah blah'
+Property 'common.setting5' was added with value: 'complex value'
+Property 'group1.baz' was changed. From 'bas' to 'bars'
+Property 'group2' was removed
+Property 'group3' was added with value: 'complex value'
+";
+        
+        $diffJson = generateDiff($this->recursiveJsonConfigPath, $this->changedRecursiveJsonConfigPath);
+        $plainDiffJson = generateDiff($this->recursiveJsonConfigPath, $this->changedRecursiveJsonConfigPath, "plain");
+
+        $this->assertSame($expected, $diffJson);
+        $this->assertSame($expectedPlain, $plainDiffJson);
     }
 
     public function testMakeAst()
@@ -167,56 +188,5 @@ class DiffTest extends TestCase
         
         $ast = makeAst($firstProperties, $secondProperties);
         $this->assertSame($expected, $ast);
-    }
-
-    public function testRenderDiff()
-    {
-        $expected = "{
-    host: hexlet.io
-  + timeout: 20
-  - timeout: 50
-  - proxy: 123.234.53.22
-  + verbose: true
-}
-";
-        
-        $expectedRecursive = "{
-    common: {
-        setting1: Value 1
-      - setting2: 200
-        setting3: true
-      - setting6: {
-            key: value
-        }
-      + setting4: blah blah
-      + setting5: {
-            key5: value5
-        }
-    }
-    group1: {
-      + baz: bars
-      - baz: bas
-        foo: bar
-    }
-  - group2: {
-        abc: 12345
-    }
-  + group3: {
-        fee: 100500
-    }
-}
-";
-
-        $firstProperties = parseFile($this->jsonConfigPath);
-        $secondProperties = parseFile($this->changedJsonConfigPath);
-        $ast = makeAst($firstProperties, $secondProperties);
-        $renderedDiff = renderDiff($ast);
-        $this->assertSame($expected, $renderedDiff);
-
-        $firstRecursiveProperties = parseFile($this->recursiveJsonConfigPath);
-        $secondRecursiveProperties = parseFile($this->changedRecursiveJsonConfigPath);
-        $astRecursive = makeAst($firstRecursiveProperties, $secondRecursiveProperties);
-        $renderedRecursiveDiff = renderDiff($astRecursive);
-        $this->assertSame($expectedRecursive, $renderedRecursiveDiff);
     }
 }

@@ -15,7 +15,7 @@ Usage:
 Options:
   -h --help       Show this screen
   -v --version    Show version
-  --format <fmt>  Report format [default: pretty]
+  --format <fmt>  Report format. Available: pretty, plain [default: pretty]
 ";
 
 function run()
@@ -29,9 +29,10 @@ function run()
 
     $firstFile = $args['<firstFile>'];
     $secondFile = $args['<secondFile>'];
+    $format = $args['--format'];
 
     try {
-        $diff = generateDiff($firstFile, $secondFile);
+        $diff = generateDiff($firstFile, $secondFile, $format);
     } catch (\Exception $e) {
         echo($e);
         return;
