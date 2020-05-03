@@ -50,8 +50,8 @@ function renderPrettyDiff($ast)
                 return $indentStr . $elem['name'] . ": " . $iter($elem['children'], $depth + 1);
             }
 
-            switch ($elem['diff']) {
-                case 'same':
+            switch ($elem['type']) {
+                case 'unchanged':
                     $prefix = '  ';
                     break;
                 case 'deleted':
@@ -60,8 +60,11 @@ function renderPrettyDiff($ast)
                 case 'added':
                     $prefix = '+ ';
                     break;
+                case 'changed':
+                    break;
                 default:
-                    # nothing
+                    $unknownType = $elem['type'];
+                    throw new \Exception("Difference type: '$unknownType' not found!\n");
                     break;
             }
 
@@ -69,7 +72,7 @@ function renderPrettyDiff($ast)
             $value = normalizeValue($elem['value'], $depth);
 
             $indentStr2 = makeIndent($depth, -2);
-            if ($elem['diff'] === 'changed') {
+            if ($elem['type'] === 'changed') {
                 $oldValue = normalizeValue($elem['oldValue'], $depth);
                 $result = "$indentStr2+ $name: $value\n$indentStr2- $name: $oldValue";
             } else {

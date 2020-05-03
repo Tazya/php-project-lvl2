@@ -2,7 +2,7 @@
     "common": {
         "children": {
             "setting1": {
-                "difference": "same",
+                "difference": "unchanged",
                 "value": "Value 1"
             },
             "setting2": {
@@ -10,7 +10,7 @@
                 "value": "200"
             },
             "setting3": {
-                "difference": "same",
+                "difference": "unchanged",
                 "value": true
             },
             "setting6": {
@@ -39,7 +39,7 @@
                 "oldValue": "bas"
             },
             "foo": {
-                "difference": "same",
+                "difference": "unchanged",
                 "value": "bar"
             }
         }

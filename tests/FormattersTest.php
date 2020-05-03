@@ -24,33 +24,33 @@ class FormattersTest extends TestCase
                 "children" => [
                     [
                         "name" => "setting1",
-                        "diff" => "same",
+                        "type" => "unchanged",
                         "value" => "Value 1"
                     ],
                     [
                         "name" => "setting2",
-                        "diff" => "deleted",
+                        "type" => "deleted",
                         "value" => "200"
                     ],
                     [
                         "name" => "setting3",
-                        "diff" => "same",
+                        "type" => "unchanged",
                         "value" => true
                     ],
                     [
                         "name" => "setting6",
-                        "diff" => "deleted",
+                        "type" => "deleted",
                         "value" => ["key" => "value"]
                     ],
                     [
                         "name" => "setting4",
-                        "diff" => "added",
+                        "type" => "added",
                         "value" => "blah blah"
 
                     ],
                     [
                         "name" => "setting5",
-                        "diff" => "added",
+                        "type" => "added",
                         "value" => ["key5" => "value5"]
                     ]
                 ]
@@ -60,25 +60,25 @@ class FormattersTest extends TestCase
                 "children" => [
                     [
                         "name" => "baz",
-                        "diff" => "changed",
+                        "type" => "changed",
                         "value" => "bars",
                         "oldValue" => "bas"
                     ],
                     [
                         "name" => "foo",
-                        "diff" => "same",
+                        "type" => "unchanged",
                         "value" => "bar"
                     ]
                 ]
             ],
             [
                 "name" => "group2",
-                "diff" => "deleted",
+                "type" => "deleted",
                 "value" => ["abc" => "12345"]
             ],
             [
                 "name" => "group3",
-                "diff" => "added",
+                "type" => "added",
                 "value" => ["fee" => "100500"]
             ]
         ];
@@ -86,23 +86,23 @@ class FormattersTest extends TestCase
         $this->flatAst = [
             [
                 "name" => "host",
-                "diff" => "same",
+                "type" => "unchanged",
                 "value" => "hexlet.io"
             ],
             [
                 "name" => "timeout",
-                "diff" => "changed",
+                "type" => "changed",
                 "value" => "20",
                 "oldValue" => "50"
             ],
             [
                 "name" => "proxy",
-                "diff" => "deleted",
+                "type" => "deleted",
                 "value" => "123.234.53.22"
             ],
             [
                 "name" => "verbose",
-                "diff" => "added",
+                "type" => "added",
                 "value" => true
             ]
         ];

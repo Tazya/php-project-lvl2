@@ -2,7 +2,7 @@
 
 namespace gendiff\differ;
 
-use function gendiff\parsers\parseFile;
+use function gendiff\parsers\parse;
 use function gendiff\Formatters\plain\renderPlainDiff;
 use function gendiff\Formatters\pretty\renderPrettyDiff;
 use function gendiff\Formatters\json\renderJsonDiff;
@@ -10,7 +10,7 @@ use function gendiff\Formatters\json\renderJsonDiff;
 function findDiff($firstProperty, $secondProperty)
 {
     if ($firstProperty === $secondProperty) {
-        $difference = 'same';
+        $difference = 'unchanged';
         $value = $firstProperty;
     } elseif ($firstProperty === null && $secondProperty !== null) {
         $difference = 'added';
@@ -24,8 +24,7 @@ function findDiff($firstProperty, $secondProperty)
         $oldValue = $firstProperty;
     }
 
-    $result = ['diff' => $difference, 'value' => $value, 'oldValue' => $oldValue ?? ''];
-    return $result;
+    return ['diff' => $difference, 'value' => $value, 'oldValue' => $oldValue ?? ''];
 }
 
 function makeAst($firstProperties, $secondProperties)
@@ -35,8 +34,8 @@ function makeAst($firstProperties, $secondProperties)
 
         if (!is_array($firstProperties) || !is_array($secondProperties)) {
             $diffParams = findDiff($firstProperties, $secondProperties);
-             
-            $result["diff"] = $diffParams["diff"];
+            
+            $result["type"] = $diffParams["diff"];
             $result["value"] = $diffParams["value"];
             
             if ($diffParams["oldValue"] !== '') {
@@ -60,10 +59,32 @@ function makeAst($firstProperties, $secondProperties)
     return $ast['children'];
 }
 
-function generateDiff(string $firstPath, string $secondPath, $format = "explain")
+function getContent($path)
 {
-    $firstProperties = parseFile($firstPath);
-    $secondProperties = parseFile($secondPath);
+    $normalized = str_replace('\\', '/', $path);
+    if ($normalized[0] == '/') {
+        $currentDirectory = '';
+    } else {
+        $currentDirectory = getcwd() . "/";
+    }
+    $fullPath = realpath($currentDirectory . $path);
+
+    if (!$fullPath) {
+        throw new \Exception("File '$path' not found!\n");
+    }
+
+    $content = file_get_contents($fullPath);
+
+    return $content;
+}
+
+function generateDiff(string $firstPath, string $secondPath, $format = "pretty")
+{
+    $firstFileExt = pathinfo($firstPath, PATHINFO_EXTENSION);
+    $secondFileExt = pathinfo($secondPath, PATHINFO_EXTENSION);
+
+    $firstProperties = parse($firstFileExt, getContent($firstPath));
+    $secondProperties = parse($secondFileExt, getContent($secondPath));
 
     $ast = makeAst($firstProperties, $secondProperties);
 

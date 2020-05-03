@@ -20,7 +20,7 @@ function renderJsonDiff($ast)
                 $newCarry = array_merge($carry, $result);
             } else {
                 $resultDiff = [
-                    "difference" => $elem['diff'],
+                    "difference" => $elem['type'],
                     "value" => $elem['value']
                 ];
 

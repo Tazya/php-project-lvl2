@@ -6,8 +6,9 @@ use PHPUnit\Framework\TestCase;
 
 use function gendiff\differ\findDiff;
 use function gendiff\differ\generateDiff;
-use function gendiff\parsers\parseFile;
+use function gendiff\parsers\parse;
 use function gendiff\differ\makeAst;
+use function gendiff\differ\getContent;
 use function gendiff\differ\renderDiff;
 
 class DiffTest extends TestCase
@@ -32,7 +33,7 @@ class DiffTest extends TestCase
 
     public function testFindDiff()
     {
-        $expected1 = ['diff' => 'same', 'value' => 'one', 'oldValue' => ''];
+        $expected1 = ['diff' => 'unchanged', 'value' => 'one', 'oldValue' => ''];
         $expected2 = ['diff' => 'added', 'value' => 'add', 'oldValue' => ''];
         $expected3 = ['diff' => 'deleted', 'value' => 'delete', 'oldValue' => ''];
         $expected4 = ['diff' => 'changed', 'value' => 2, 'oldValue' => 0];
@@ -77,41 +78,41 @@ class DiffTest extends TestCase
 
     public function testMakeAst()
     {
-        $firstProperties = parseFile($this->recursiveJsonConfigPath);
-        $secondProperties = parseFile($this->changedRecursiveJsonConfigPath);
+        $firstProperties = parse('json', file_get_contents($this->recursiveJsonConfigPath));
+        $secondProperties = parse('yml', file_get_contents($this->changedRecursiveJsonConfigPath));
         $expected = [
             [
                 "name" => "common",
                 "children" => [
                     [
                         "name" => "setting1",
-                        "diff" => "same",
+                        "type" => "unchanged",
                         "value" => "Value 1"
                     ],
                     [
                         "name" => "setting2",
-                        "diff" => "deleted",
+                        "type" => "deleted",
                         "value" => "200"
                     ],
                     [
                         "name" => "setting3",
-                        "diff" => "same",
+                        "type" => "unchanged",
                         "value" => true
                     ],
                     [
                         "name" => "setting6",
-                        "diff" => "deleted",
+                        "type" => "deleted",
                         "value" => ["key" => "value"]
                     ],
                     [
                         "name" => "setting4",
-                        "diff" => "added",
+                        "type" => "added",
                         "value" => "blah blah"
 
                     ],
                     [
                         "name" => "setting5",
-                        "diff" => "added",
+                        "type" => "added",
                         "value" => ["key5" => "value5"]
                     ]
                 ]
@@ -121,30 +122,38 @@ class DiffTest extends TestCase
                 "children" => [
                     [
                         "name" => "baz",
-                        "diff" => "changed",
+                        "type" => "changed",
                         "value" => "bars",
                         "oldValue" => "bas"
                     ],
                     [
                         "name" => "foo",
-                        "diff" => "same",
+                        "type" => "unchanged",
                         "value" => "bar"
                     ]
                 ]
             ],
             [
                 "name" => "group2",
-                "diff" => "deleted",
+                "type" => "deleted",
                 "value" => ["abc" => "12345"]
             ],
             [
                 "name" => "group3",
-                "diff" => "added",
+                "type" => "added",
                 "value" => ["fee" => "100500"]
             ]
         ];
         
         $ast = makeAst($firstProperties, $secondProperties);
         $this->assertSame($expected, $ast);
+    }
+
+    public function testGetContentNotExisted()
+    {
+        $notExistedPath = "tests/fixtures/notExisted.json";
+
+        $this->expectExceptionMessage("File '$notExistedPath' not found!\n");
+        getContent($notExistedPath);
     }
 }

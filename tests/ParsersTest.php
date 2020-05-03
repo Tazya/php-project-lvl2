@@ -4,14 +4,17 @@ namespace gendiff\Tests;
 
 use PHPUnit\Framework\TestCase;
 
-use function gendiff\parsers\parseFile;
+use function gendiff\parsers\parse;
 
 class ParsersTest extends TestCase
 {
-    public function testParseFile()
+    public function testParse()
     {
         $jsonPath = "tests/fixtures/flatBefore.json";
         $yamlPath = "tests/fixtures/flatBefore.yml";
+
+        $contentJson = file_get_contents($jsonPath);
+        $contentYaml = file_get_contents($yamlPath);
 
         $expected = [
             "host" => "hexlet.io",
@@ -19,23 +22,16 @@ class ParsersTest extends TestCase
             "proxy" => "123.234.53.22"
         ];
 
-        $this->assertSame($expected, parseFile($jsonPath));
-        $this->assertSame($expected, parseFile($yamlPath));
+        $this->assertSame($expected, parse('json', $contentJson));
+        $this->assertSame($expected, parse('yml', $contentYaml));
     }
 
-    public function testParseFileNotExisted()
-    {
-        $notExistedPath = "tests/fixtures/notExisted.json";
-
-        $this->expectExceptionMessage("File '$notExistedPath' not found!\n");
-        parseFile($notExistedPath);
-    }
-
-    public function testParseFileWrongExtension()
+    public function testParseWrongExtension()
     {
         $wrongExtensionPath = "tests/fixtures/wrongExt.jsan";
+        $content = file_get_contents($wrongExtensionPath);
 
-        $this->expectExceptionMessage("File '$wrongExtensionPath' has a unknown extension: 'jsan'\n");
-        parseFile($wrongExtensionPath);
+        $this->expectExceptionMessage("File has a unknown extension: 'jsan'\n");
+        parse('jsan', $content);
     }
 }
