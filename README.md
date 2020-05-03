@@ -25,6 +25,6 @@ Use ```gendiff <file1> <file2>``` command to compare configs
 Use ```gendiff --format <format> <file1> <file2>``` command to compare configs. Allow 'pretty', 'plain' and 'json' formats  
 [![asciicast](https://asciinema.org/a/325822.svg)](https://asciinema.org/a/325822)
 
-## Format options usage
+## Get results in JSON 
 Use ```gendiff --format json <file1> <file2>``` command to show results in JSON. It can be useful as library in your project  
 [![asciicast](https://asciinema.org/a/326352.svg)](https://asciinema.org/a/326352)
