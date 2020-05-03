@@ -20,7 +20,8 @@
             "src/differ.php",
             "src/parsers.php",
             "src/Formatters/pretty.php",
-            "src/Formatters/plain.php"
+            "src/Formatters/plain.php",
+            "src/Formatters/json.php"
         ]
     },
     "require": {

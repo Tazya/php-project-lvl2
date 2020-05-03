@@ -15,7 +15,7 @@ Usage:
 Options:
   -h --help       Show this screen
   -v --version    Show version
-  --format <fmt>  Report format. Available: pretty, plain [default: pretty]
+  --format <fmt>  Report format. Available: pretty, plain, json [default: pretty]
 ";
 
 function run()
@@ -38,5 +38,5 @@ function run()
         return;
     }
 
-    print_r($diff);
+    print_r($diff . "\n");
 }

@@ -5,6 +5,7 @@ namespace gendiff\differ;
 use function gendiff\parsers\parseFile;
 use function gendiff\Formatters\plain\renderPlainDiff;
 use function gendiff\Formatters\pretty\renderPrettyDiff;
+use function gendiff\Formatters\json\renderJsonDiff;
 
 function findDiff($firstProperty, $secondProperty)
 {
@@ -68,6 +69,8 @@ function generateDiff(string $firstPath, string $secondPath, $format = "explain"
 
     if ($format === "plain") {
         $diff = renderPlainDiff($ast);
+    } elseif ($format === "json") {
+        $diff = renderJsonDiff($ast);
     } else {
         $diff = renderPrettyDiff($ast);
     }

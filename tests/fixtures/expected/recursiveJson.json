@@ -1,0 +1,59 @@
+{
+    "common": {
+        "children": {
+            "setting1": {
+                "difference": "same",
+                "value": "Value 1"
+            },
+            "setting2": {
+                "difference": "deleted",
+                "value": "200"
+            },
+            "setting3": {
+                "difference": "same",
+                "value": true
+            },
+            "setting6": {
+                "difference": "deleted",
+                "value": {
+                    "key": "value"
+                }
+            },
+            "setting4": {
+                "difference": "added",
+                "value": "blah blah"
+            },
+            "setting5": {
+                "difference": "added",
+                "value": {
+                    "key5": "value5"
+                }
+            }
+        }
+    },
+    "group1": {
+        "children": {
+            "baz": {
+                "difference": "changed",
+                "value": "bars",
+                "oldValue": "bas"
+            },
+            "foo": {
+                "difference": "same",
+                "value": "bar"
+            }
+        }
+    },
+    "group2": {
+        "difference": "deleted",
+        "value": {
+            "abc": "12345"
+        }
+    },
+    "group3": {
+        "difference": "added",
+        "value": {
+            "fee": "100500"
+        }
+    }
+}

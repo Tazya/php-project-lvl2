@@ -59,5 +59,5 @@ function renderPlainDiff($ast)
     };
 
     $diff = $iter($ast);
-    return $diff . "\n";
+    return $diff;
 }

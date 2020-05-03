@@ -9,10 +9,12 @@ use function gendiff\Formatters\pretty\normalizeValue as normalizeValuePretty;
 use function gendiff\Formatters\pretty\makeIndent;
 use function gendiff\Formatters\pretty\renderPrettyDiff;
 use function gendiff\Formatters\plain\renderPlainDiff;
+use function gendiff\Formatters\json\renderJsonDiff;
 
 class FormattersTest extends TestCase
 {
     protected $ast;
+    protected $prettyAst;
 
     protected function setUp(): void
     {
@@ -80,16 +82,36 @@ class FormattersTest extends TestCase
                 "value" => ["fee" => "100500"]
             ]
         ];
+
+        $this->flatAst = [
+            [
+                "name" => "host",
+                "diff" => "same",
+                "value" => "hexlet.io"
+            ],
+            [
+                "name" => "timeout",
+                "diff" => "changed",
+                "value" => "20",
+                "oldValue" => "50"
+            ],
+            [
+                "name" => "proxy",
+                "diff" => "deleted",
+                "value" => "123.234.53.22"
+            ],
+            [
+                "name" => "verbose",
+                "diff" => "added",
+                "value" => true
+            ]
+        ];
     }
 
     public function testNormalizeValuePretty()
     {
-        $expected = "{
-    one: {
-        two: ex
-    }
-    three: bex
-}";
+        $expected = file_get_contents('tests/fixtures/expected/normalized.txt');
+
         $this->assertSame('one', normalizeValuePretty('one', 1));
         $this->assertSame('true', normalizeValuePretty(true, 1));
         $this->assertSame('false', normalizeValuePretty(false, 1));
@@ -116,32 +138,7 @@ class FormattersTest extends TestCase
 
     public function testRenderDiffPretty()
     {
-        $expected = "{
-    common: {
-        setting1: Value 1
-      - setting2: 200
-        setting3: true
-      - setting6: {
-            key: value
-        }
-      + setting4: blah blah
-      + setting5: {
-            key5: value5
-        }
-    }
-    group1: {
-      + baz: bars
-      - baz: bas
-        foo: bar
-    }
-  - group2: {
-        abc: 12345
-    }
-  + group3: {
-        fee: 100500
-    }
-}
-";
+        $expected = file_get_contents('tests/fixtures/expected/recursivePretty.txt');
 
         $renderedDiff = renderPrettyDiff($this->ast);
         $this->assertSame($expected, $renderedDiff);
@@ -149,16 +146,20 @@ class FormattersTest extends TestCase
 
     public function testRenderDiffPlain()
     {
-        $expected = "Property 'common.setting2' was removed
-Property 'common.setting6' was removed
-Property 'common.setting4' was added with value: 'blah blah'
-Property 'common.setting5' was added with value: 'complex value'
-Property 'group1.baz' was changed. From 'bas' to 'bars'
-Property 'group2' was removed
-Property 'group3' was added with value: 'complex value'
-";
+        $expected = file_get_contents('tests/fixtures/expected/recursivePlain.txt');
 
         $renderedDiff = renderPlainDiff($this->ast);
         $this->assertSame($expected, $renderedDiff);
+    }
+
+    public function testRenderDiffJson()
+    {
+        $expected = file_get_contents('tests/fixtures/expected/flatJson.json');
+        $expectedRecursive = file_get_contents('tests/fixtures/expected/recursiveJson.json');
+        $renderedDiff = renderJsonDiff($this->flatAst);
+        $renderedRecursiveDiff = renderJsonDiff($this->ast);
+
+        $this->assertSame($expected, $renderedDiff);
+        $this->assertSame($expectedRecursive, $renderedRecursiveDiff);
     }
 }

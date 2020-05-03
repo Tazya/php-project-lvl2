@@ -45,19 +45,9 @@ class DiffTest extends TestCase
 
     public function testGenerateDiffFlat()
     {
-        $expected = "{
-    host: hexlet.io
-  + timeout: 20
-  - timeout: 50
-  - proxy: 123.234.53.22
-  + verbose: true
-}
-";
+        $expected = file_get_contents('tests/fixtures/expected/flatPretty.txt');
 
-        $expectedPlain = "Property 'timeout' was changed. From '50' to '20'
-Property 'proxy' was removed
-Property 'verbose' was added with value: 'true'
-";
+        $expectedPlain = file_get_contents('tests/fixtures/expected/flatPlain.txt');
         
         $diffJson = generateDiff($this->jsonConfigPath, $this->changedJsonConfigPath);
         $diffYaml = generateDiff($this->yamlConfigPath, $this->changedYamlConfigPath);
@@ -74,41 +64,9 @@ Property 'verbose' was added with value: 'true'
 
     public function testGenerateDiffRecursive()
     {
-        $expected = "{
-    common: {
-        setting1: Value 1
-      - setting2: 200
-        setting3: true
-      - setting6: {
-            key: value
-        }
-      + setting4: blah blah
-      + setting5: {
-            key5: value5
-        }
-    }
-    group1: {
-      + baz: bars
-      - baz: bas
-        foo: bar
-    }
-  - group2: {
-        abc: 12345
-    }
-  + group3: {
-        fee: 100500
-    }
-}
-";
+        $expected = file_get_contents('tests/fixtures/expected/recursivePretty.txt');
 
-        $expectedPlain = "Property 'common.setting2' was removed
-Property 'common.setting6' was removed
-Property 'common.setting4' was added with value: 'blah blah'
-Property 'common.setting5' was added with value: 'complex value'
-Property 'group1.baz' was changed. From 'bas' to 'bars'
-Property 'group2' was removed
-Property 'group3' was added with value: 'complex value'
-";
+        $expectedPlain = file_get_contents('tests/fixtures/expected/recursivePlain.txt');
         
         $diffJson = generateDiff($this->recursiveJsonConfigPath, $this->changedRecursiveJsonConfigPath);
         $plainDiffJson = generateDiff($this->recursiveJsonConfigPath, $this->changedRecursiveJsonConfigPath, "plain");
