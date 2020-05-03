@@ -22,5 +22,9 @@ Use ```gendiff <file1> <file2>``` command to compare configs
 [![asciicast](https://asciinema.org/a/325468.svg)](https://asciinema.org/a/325468)
 
 ## Format options usage
-Use ```gendiff --format <format> <file1> <file2>``` command to compare configs. Allow 'pretty' and 'plain' formats  
+Use ```gendiff --format <format> <file1> <file2>``` command to compare configs. Allow 'pretty', 'plain' and 'json' formats  
 [![asciicast](https://asciinema.org/a/325822.svg)](https://asciinema.org/a/325822)
+
+## Format options usage
+Use ```gendiff --format json <file1> <file2>``` command to show results in JSON. It can be useful as library in your project  
+[![asciicast](https://asciinema.org/a/326352.svg)](https://asciinema.org/a/326352)
