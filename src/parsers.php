@@ -11,6 +11,6 @@ function parse($ext, $content)
     } elseif ($ext === 'yml') {
         return Yaml::parse($content);
     } else {
-        throw new \Exception("File has a unknown extension: '$ext'\n");
+        throw new \Exception("File has an unknown extension: '$ext'\n");
     }
 }

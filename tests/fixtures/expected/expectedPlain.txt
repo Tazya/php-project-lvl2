@@ -5,3 +5,4 @@ Property 'common.setting5' was added with value: 'complex value'
 Property 'group1.baz' was changed. From 'bas' to 'bars'
 Property 'group2' was removed
 Property 'group3' was added with value: 'complex value'
+Property 'tea' was added with value: 'false'

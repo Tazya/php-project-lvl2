@@ -61,13 +61,13 @@ function makeAst($firstProperties, $secondProperties)
 
 function getContent($path)
 {
-    $normalized = str_replace('\\', '/', $path);
+    $normalized = str_replace("\\", "/", $path);
     if ($normalized[0] == '/') {
         $currentDirectory = '';
     } else {
         $currentDirectory = getcwd() . "/";
     }
-    $fullPath = realpath($currentDirectory . $path);
+    $fullPath = realpath($currentDirectory . $normalized);
 
     if (!$fullPath) {
         throw new \Exception("File '$path' not found!\n");
