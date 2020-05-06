@@ -4,12 +4,7 @@ namespace gendiff\Tests;
 
 use PHPUnit\Framework\TestCase;
 
-use function gendiff\differ\findDiff;
 use function gendiff\differ\generateDiff;
-use function gendiff\parsers\parse;
-use function gendiff\differ\makeAst;
-use function gendiff\differ\getContent;
-use function gendiff\differ\renderDiff;
 
 class DiffTest extends TestCase
 {
