@@ -1,8 +1,7 @@
-name: Tests
+name: PHP CI
 
 on:
-  push:
-    branches: [ master ]
+  - push
 
 jobs:
   build:
@@ -12,8 +11,10 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Validate composer.json and composer.lock
-      run: composer validate
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v1
+      with:
+        php-version: '7.3'
 
     - name: Install dependencies
       run: make install
@@ -21,5 +22,12 @@ jobs:
     - name: Run linter
       run: make lint
 
-    - name: Run tests
-      run: make test
+    - name: Run test & publish code coverage
+      uses: paambaati/codeclimate-action@v2.6.0
+
+      # Add Code Climate secret key
+      env:
+        CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
+      with:
+        coverageCommand: make test
+        debug: true
