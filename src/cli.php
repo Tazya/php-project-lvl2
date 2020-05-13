@@ -27,16 +27,11 @@ function run()
 
     $args = \Docopt::handle(DOC, $params);
 
-    $firstFile = $args['<firstFile>'];
-    $secondFile = $args['<secondFile>'];
+    $firstFilepath = $args['<firstFile>'];
+    $secondFilepath = $args['<secondFile>'];
     $format = $args['--format'];
 
-    try {
-        $diff = generateDiff($firstFile, $secondFile, $format);
-    } catch (\Exception $e) {
-        echo($e);
-        return;
-    }
+    $diff = generateDiff($firstFilepath, $secondFilepath, $format);
 
     print_r($diff . "\n");
 }

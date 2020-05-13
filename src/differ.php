@@ -7,56 +7,49 @@ use function gendiff\Formatters\plain\renderPlainDiff;
 use function gendiff\Formatters\pretty\renderPrettyDiff;
 use function gendiff\Formatters\json\renderJsonDiff;
 
-function findDiff($firstProperty, $secondProperty)
-{
-    if ($firstProperty === $secondProperty) {
-        $difference = 'unchanged';
-        $value = $firstProperty;
-    } elseif ($firstProperty === null && $secondProperty !== null) {
-        $difference = 'added';
-        $value = $secondProperty;
-    } elseif ($firstProperty !== null && $secondProperty === null) {
-        $difference = 'deleted';
-        $value = $firstProperty;
-    } else {
-        $difference = 'changed';
-        $value = $secondProperty;
-        $oldValue = $firstProperty;
-    }
-
-    return ['diff' => $difference, 'value' => $value, 'oldValue' => $oldValue ?? ''];
-}
-
 function makeAst($firstProperties, $secondProperties)
 {
-    $iter = function ($firstProperties, $secondProperties, $key = 'main') use (&$iter) {
-        $result["name"] = $key;
+    $iter = function ($firstProperties, $secondProperties) use (&$iter) {
+        $allKeys = array_keys(array_merge($firstProperties, $secondProperties));
 
-        if (!is_array($firstProperties) || !is_array($secondProperties)) {
-            $diffParams = findDiff($firstProperties, $secondProperties);
-            
-            $result["type"] = $diffParams["diff"];
-            $result["value"] = $diffParams["value"];
-            
-            if ($diffParams["oldValue"] !== '') {
-                $result["oldValue"] = $diffParams["oldValue"];
-            }
-        } else {
-            $allKeys = array_keys(array_merge($firstProperties, $secondProperties));
-
-            $children = array_map(function ($key) use (&$iter, $firstProperties, $secondProperties) {
-                $firstProperty = isset($firstProperties[$key]) ? $firstProperties[$key] : null;
-                $secondProperty = isset($secondProperties[$key]) ? $secondProperties[$key] : null;
-                return $iter($firstProperty, $secondProperty, $key);
-            }, $allKeys);
-            $result["children"] = $children;
+        if (empty($allKeys)) {
+            return [];
         }
 
-        return $result;
+        $ast = array_map(function ($key) use (&$iter, $firstProperties, $secondProperties) {
+            $firstProperty = isset($firstProperties[$key]) ? $firstProperties[$key] : null;
+            $secondProperty = isset($secondProperties[$key]) ? $secondProperties[$key] : null;
+
+            if ($firstProperty === null && $secondProperty !== null) {
+                return ['name' => $key, 'type' => 'added', 'value' => $secondProperty];
+            }
+            
+            if ($firstProperty !== null && $secondProperty === null) {
+                return ['name' => $key, 'type' => 'deleted', 'value' => $firstProperty];
+            }
+            
+            if ($firstProperty === $secondProperty) {
+                return ['name' => $key, 'type' => 'unchanged', 'value' => $firstProperty];
+            }
+
+            if (is_array($firstProperty) && is_array($secondProperty)) {
+                return ['name' => $key, 'children' => $iter($firstProperty, $secondProperty)];
+            }
+
+            if ($firstProperty !== $secondProperty) {
+                return [
+                    'name' => $key,
+                    'type' => 'changed',
+                    'value' => $secondProperty,
+                    'oldValue' => $firstProperty
+                ];
+            }
+        }, $allKeys);
+
+        return $ast;
     };
 
-    $ast = $iter($firstProperties, $secondProperties);
-    return $ast['children'];
+    return $iter($firstProperties, $secondProperties);
 }
 
 function getContent($path)
@@ -70,7 +63,7 @@ function getContent($path)
     $fullPath = realpath($currentDirectory . $normalized);
 
     if (!$fullPath) {
-        throw new \Exception("File '$path' not found!\n");
+        throw new \Exception("File '$path' not found!");
     }
 
     $content = file_get_contents($fullPath);
@@ -88,12 +81,19 @@ function generateDiff(string $firstPath, string $secondPath, $format = "pretty")
 
     $ast = makeAst($firstProperties, $secondProperties);
 
-    if ($format === "plain") {
-        $diff = renderPlainDiff($ast);
-    } elseif ($format === "json") {
-        $diff = renderJsonDiff($ast);
-    } else {
-        $diff = renderPrettyDiff($ast);
+    switch ($format) {
+        case 'pretty':
+            $diff = renderPrettyDiff($ast);
+            break;
+        case 'plain':
+            $diff = renderPlainDiff($ast);
+            break;
+        case 'json':
+            $diff = renderJsonDiff($ast);
+            break;
+                
+        default:
+            throw new \Exception("Unknown format '$format'");
     }
 
     return $diff;
