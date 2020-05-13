@@ -5,7 +5,6 @@ namespace gendiff\Formatters\json;
 function renderJsonDiff($ast)
 {
     $iter = function ($ast) use (&$iter) {
-
         $diffs = array_reduce($ast, function ($carry, $elem) use (&$iter) {
             $name = $elem['name'];
 
