@@ -1,63 +1,78 @@
-{
-    "common": {
-        "children": {
-            "setting1": {
-                "difference": "unchanged",
+[
+    {
+        "name": "common",
+        "type": "parent",
+        "children": [
+            {
+                "name": "setting1",
+                "type": "unchanged",
                 "value": "Value 1"
             },
-            "setting2": {
-                "difference": "deleted",
+            {
+                "name": "setting2",
+                "type": "deleted",
                 "value": "200"
             },
-            "setting3": {
-                "difference": "unchanged",
+            {
+                "name": "setting3",
+                "type": "unchanged",
                 "value": true
             },
-            "setting6": {
-                "difference": "deleted",
+            {
+                "name": "setting6",
+                "type": "deleted",
                 "value": {
                     "key": "value"
                 }
             },
-            "setting4": {
-                "difference": "added",
+            {
+                "name": "setting4",
+                "type": "added",
                 "value": "blah blah"
             },
-            "setting5": {
-                "difference": "added",
+            {
+                "name": "setting5",
+                "type": "added",
                 "value": {
                     "key5": "value5"
                 }
             }
-        }
+        ]
     },
-    "group1": {
-        "children": {
-            "baz": {
-                "difference": "changed",
+    {
+        "name": "group1",
+        "type": "parent",
+        "children": [
+            {
+                "name": "baz",
+                "type": "changed",
                 "value": "bars",
                 "oldValue": "bas"
             },
-            "foo": {
-                "difference": "unchanged",
+            {
+                "name": "foo",
+                "type": "unchanged",
                 "value": "bar"
             }
-        }
+        ]
     },
-    "group2": {
-        "difference": "deleted",
+    {
+        "name": "group2",
+        "type": "deleted",
         "value": {
             "abc": "12345"
         }
     },
-    "group3": {
-        "difference": "added",
+    {
+        "name": "group3",
+        "type": "added",
         "value": {
             "fee": "100500"
         }
     },
-    "tea": {
-        "difference": "added",
+    {
+        "name": "tea",
+        "type": "added",
         "value": false
     }
-}
+]

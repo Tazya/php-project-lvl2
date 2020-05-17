@@ -9,47 +9,49 @@ use function gendiff\Formatters\json\renderJsonDiff;
 
 function makeAst($firstProperties, $secondProperties)
 {
-    $iter = function ($firstProperties, $secondProperties) use (&$iter) {
-        $allKeys = array_keys(array_merge($firstProperties, $secondProperties));
+    $allKeys = array_unique(
+        array_merge(
+            array_keys($firstProperties),
+            array_keys($secondProperties)
+        )
+    );
 
-        if (empty($allKeys)) {
-            return [];
+    $ast = array_map(function ($key) use (&$iter, $firstProperties, $secondProperties) {
+        if (!hasProperty($key, $firstProperties) && hasProperty($key, $secondProperties)) {
+            return ['name' => $key, 'type' => 'added', 'value' => $secondProperties[$key]];
+        }
+        
+        if (hasProperty($key, $firstProperties) && !hasProperty($key, $secondProperties)) {
+            return ['name' => $key, 'type' => 'deleted', 'value' => $firstProperties[$key]];
+        }
+        
+        $firstProperty = $firstProperties[$key];
+        $secondProperty = $secondProperties[$key];
+
+        if ($firstProperty === $secondProperty) {
+            return ['name' => $key, 'type' => 'unchanged', 'value' => $firstProperty];
         }
 
-        $ast = array_map(function ($key) use (&$iter, $firstProperties, $secondProperties) {
-            $firstProperty = isset($firstProperties[$key]) ? $firstProperties[$key] : null;
-            $secondProperty = isset($secondProperties[$key]) ? $secondProperties[$key] : null;
+        if (is_array($firstProperty) && is_array($secondProperty)) {
+            return ['name' => $key, 'type' => 'parent', 'children' => makeAst($firstProperty, $secondProperty)];
+        }
 
-            if ($firstProperty === null && $secondProperty !== null) {
-                return ['name' => $key, 'type' => 'added', 'value' => $secondProperty];
-            }
-            
-            if ($firstProperty !== null && $secondProperty === null) {
-                return ['name' => $key, 'type' => 'deleted', 'value' => $firstProperty];
-            }
-            
-            if ($firstProperty === $secondProperty) {
-                return ['name' => $key, 'type' => 'unchanged', 'value' => $firstProperty];
-            }
+        if ($firstProperty !== $secondProperty) {
+            return [
+                'name' => $key,
+                'type' => 'changed',
+                'value' => $secondProperty,
+                'oldValue' => $firstProperty
+            ];
+        }
+    }, $allKeys);
 
-            if (is_array($firstProperty) && is_array($secondProperty)) {
-                return ['name' => $key, 'children' => $iter($firstProperty, $secondProperty)];
-            }
+    return array_values($ast);
+}
 
-            if ($firstProperty !== $secondProperty) {
-                return [
-                    'name' => $key,
-                    'type' => 'changed',
-                    'value' => $secondProperty,
-                    'oldValue' => $firstProperty
-                ];
-            }
-        }, $allKeys);
-
-        return $ast;
-    };
-
-    return $iter($firstProperties, $secondProperties);
+function hasProperty($key, $properties)
+{
+    return array_key_exists($key, $properties);
 }
 
 function getContent($path)
@@ -93,7 +95,7 @@ function generateDiff(string $firstPath, string $secondPath, $format = "pretty")
             break;
                 
         default:
-            throw new \Exception("Unknown format '$format'");
+            throw new \Exception("[Render error] Format '$format' is unknown for rendering");
     }
 
     return $diff;

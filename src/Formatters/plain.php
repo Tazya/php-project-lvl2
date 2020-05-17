@@ -19,21 +19,19 @@ function renderPlainDiff($ast)
 {
     $iter = function ($ast, $parents = []) use (&$iter) {
         $filteredAst = array_filter($ast, function ($elem) {
-            return !(isset($elem['type']) && $elem['type'] === "unchanged");
+            return $elem['type'] !== "unchanged";
         });
 
         $diffs = array_map(function ($elem) use (&$iter, $parents) {
             $name = $elem['name'];
             $newParents = array_merge($parents, [$name]);
 
-            if (isset($elem['children'])) {
-                return $iter($elem['children'], $newParents);
-            }
-
-            $value = normalizeValue($elem['value']);
-            $oldValue = isset($elem['oldValue']) ? normalizeValue($elem['oldValue']) : '';
+            $value = isset($elem['value']) ? normalizeValue($elem['value']) : null;
+            $oldValue = isset($elem['oldValue']) ? normalizeValue($elem['oldValue']) : null;
 
             switch ($elem['type']) {
+                case 'parent':
+                    return $iter($elem['children'], $newParents);
                 case 'changed':
                     $elemDiff = "changed. From '$oldValue' to '$value'";
                     break;
@@ -46,10 +44,6 @@ function renderPlainDiff($ast)
                 default:
                     $unknownType = $elem['type'];
                     throw new \Exception("Difference type: '$unknownType' not found!\n");
-            }
-
-            if ($elem['type'] === 'unchanged') {
-                $result = '';
             }
 
             $parentsStr = implode('.', $newParents);
