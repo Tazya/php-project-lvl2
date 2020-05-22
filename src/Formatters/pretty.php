@@ -8,7 +8,7 @@ function normalizeValue($rawValue, $depth)
         $indentStrInn = makeIndent($depth + 1);
         $indentStrOuter = makeIndent($depth);
 
-        $formattedArray = array_map(function ($value, $key) use (&$iterFormatArray, $indentStrInn, $depth) {
+        $formattedValues = array_map(function ($value, $key) use (&$iterFormatArray, $indentStrInn, $depth) {
             if (is_array($value)) {
                 return "{$indentStrInn}{$key}: " . $iterFormatArray($value, $depth + 1);
             } else {
@@ -16,7 +16,7 @@ function normalizeValue($rawValue, $depth)
             }
         }, $array, array_keys($array));
 
-        $formattedStr = implode("\n", $formattedArray);
+        $formattedStr = implode("\n", $formattedValues);
         return "{\n$formattedStr\n$indentStrOuter}";
     };
 
@@ -35,9 +35,6 @@ function makeIndent($depth, $offset = 0)
 {
     $indent = 4;
     $spacesCount = $indent * $depth + $offset;
-    if ($spacesCount < 0) {
-        throw new \Exception("Indent cannot be less than 0");
-    }
     return implode("", array_fill(0, $spacesCount, " "));
 }
 
@@ -46,27 +43,27 @@ function renderPrettyDiff($ast)
     $iter = function ($ast, $depth = 1) use (&$iter) {
         $diffs = array_map(function ($elem) use (&$iter, $depth) {
             $name = $elem['name'];
-            $value = isset($elem['value']) ? normalizeValue($elem['value'], $depth) : null;
-            $oldValue = isset($elem['oldValue']) ? normalizeValue($elem['oldValue'], $depth) : null;
             $indentStr = makeIndent($depth, -2);
 
             switch ($elem['type']) {
                 case 'parent':
-                    $prefix = '  ';
                     return "{$indentStr}  {$name}: " . $iter($elem['children'], $depth + 1);
                 case 'unchanged':
-                    $prefix = '  ';
+                    $value = normalizeValue($elem['value'], $depth);
                     $result = "$indentStr  $name: $value";
                     break;
                 case 'deleted':
-                    $prefix = '- ';
+                    $value = normalizeValue($elem['value'], $depth);
                     $result = "$indentStr- $name: $value";
                     break;
                 case 'added':
+                    $value = normalizeValue($elem['value'], $depth);
                     $result = "$indentStr+ $name: $value";
                     break;
                 case 'changed':
-                    $result = "$indentStr+ $name: $value\n$indentStr- $name: $oldValue";
+                    $newValue = normalizeValue($elem['newValue'], $depth);
+                    $oldValue = normalizeValue($elem['oldValue'], $depth);
+                    $result = "$indentStr+ $name: $newValue\n$indentStr- $name: $oldValue";
                     break;
                 default:
                     $unknownType = $elem['type'];

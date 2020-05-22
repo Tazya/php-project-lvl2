@@ -26,19 +26,19 @@ function renderPlainDiff($ast)
             $name = $elem['name'];
             $newParents = array_merge($parents, [$name]);
 
-            $value = isset($elem['value']) ? normalizeValue($elem['value']) : null;
-            $oldValue = isset($elem['oldValue']) ? normalizeValue($elem['oldValue']) : null;
-
             switch ($elem['type']) {
                 case 'parent':
                     return $iter($elem['children'], $newParents);
                 case 'changed':
-                    $elemDiff = "changed. From '$oldValue' to '$value'";
+                    $newValue = normalizeValue($elem['newValue']);
+                    $oldValue = normalizeValue($elem['oldValue']);
+                    $elemDiff = "changed. From '$oldValue' to '$newValue'";
                     break;
                 case 'deleted':
                     $elemDiff = 'removed';
                     break;
                 case 'added':
+                    $value = normalizeValue($elem['value']);
                     $elemDiff = "added with value: '$value'";
                     break;
                 default:

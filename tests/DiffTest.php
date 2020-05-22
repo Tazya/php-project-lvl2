@@ -17,7 +17,6 @@ class DiffTest extends TestCase
     protected $yamlBeforePath;
     protected $yamlAfterPath;
 
-
     protected function setUp(): void
     {
         $this->jsonBeforePath = $this->makeFilePath('before.json');
@@ -36,40 +35,32 @@ class DiffTest extends TestCase
         throw new \Exception("[Test fixtures error] File '$path' not found");
     }
 
-    public function testGenerateDiffPrettyFormat()
+    public function gendiffProvider()
     {
-        $expected = file_get_contents($this->makeFilePath('expectedPretty.txt', 'expected/'));
+        $prettyExpected = file_get_contents($this->makeFilePath('expectedPretty.txt', 'expected/'));
+        $plainExpected = file_get_contents($this->makeFilePath('expectedPlain.txt', 'expected/'));
+        $jsonExpected = file_get_contents($this->makeFilePath('expectedJson.json', 'expected/'));
         
-        $jsonDiff = generateDiff($this->jsonBeforePath, $this->jsonAfterPath);
-        $yamlDiff = generateDiff($this->yamlBeforePath, $this->yamlAfterPath);
+        return [
+            [$prettyExpected, 'pretty'],
+            [$plainExpected, 'plain'],
+            [$jsonExpected, 'json']
+        ];
+    }
+
+    /**
+     * @dataProvider gendiffProvider
+     */
+    public function testGenerateDiff($expected, $format)
+    {
+        $jsonDiff = generateDiff($this->jsonBeforePath, $this->jsonAfterPath, $format);
+        $yamlDiff = generateDiff($this->yamlBeforePath, $this->yamlAfterPath, $format);
 
         $this->assertSame($expected, $jsonDiff);
         $this->assertSame($expected, $yamlDiff);
     }
 
-    public function testGenerateDiffPlainFormat()
-    {
-        $expected = file_get_contents($this->makeFilePath('expectedPlain.txt', 'expected/'));
-        
-        $jsonDiff = generateDiff($this->jsonBeforePath, $this->jsonAfterPath, 'plain');
-        $yamlDiff = generateDiff($this->yamlBeforePath, $this->yamlAfterPath, 'plain');
-
-        $this->assertSame($expected, $jsonDiff);
-        $this->assertSame($expected, $yamlDiff);
-    }
-
-    public function testGenerateDiffJsonFormat()
-    {
-        $expected = file_get_contents($this->makeFilePath('expectedJson.json', 'expected/'));
-        
-        $jsonDiff = generateDiff($this->jsonBeforePath, $this->jsonAfterPath, 'json');
-        $yamlDiff = generateDiff($this->yamlBeforePath, $this->yamlAfterPath, 'json');
-
-        $this->assertSame($expected, $jsonDiff);
-        $this->assertSame($expected, $yamlDiff);
-    }
-
-    public function testGenerateDiffNotExisted()
+    public function testGenerateDiffFileNotExisted()
     {
         $notExistedPath = self::FIXTURES_PATH . "/notExisted.json";
 

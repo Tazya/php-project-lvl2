@@ -46,7 +46,7 @@
             {
                 "name": "baz",
                 "type": "changed",
-                "value": "bars",
+                "newValue": "bars",
                 "oldValue": "bas"
             },
             {

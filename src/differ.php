@@ -17,11 +17,11 @@ function makeAst($firstProperties, $secondProperties)
     );
 
     $ast = array_map(function ($key) use (&$iter, $firstProperties, $secondProperties) {
-        if (!hasProperty($key, $firstProperties) && hasProperty($key, $secondProperties)) {
+        if (!array_key_exists($key, $firstProperties) && array_key_exists($key, $secondProperties)) {
             return ['name' => $key, 'type' => 'added', 'value' => $secondProperties[$key]];
         }
         
-        if (hasProperty($key, $firstProperties) && !hasProperty($key, $secondProperties)) {
+        if (array_key_exists($key, $firstProperties) && !array_key_exists($key, $secondProperties)) {
             return ['name' => $key, 'type' => 'deleted', 'value' => $firstProperties[$key]];
         }
         
@@ -40,18 +40,13 @@ function makeAst($firstProperties, $secondProperties)
             return [
                 'name' => $key,
                 'type' => 'changed',
-                'value' => $secondProperty,
+                'newValue' => $secondProperty,
                 'oldValue' => $firstProperty
             ];
         }
     }, $allKeys);
 
     return array_values($ast);
-}
-
-function hasProperty($key, $properties)
-{
-    return array_key_exists($key, $properties);
 }
 
 function getContent($path)
