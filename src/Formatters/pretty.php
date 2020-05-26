@@ -50,28 +50,21 @@ function renderPrettyDiff($ast)
                     return "{$indentStr}  {$name}: " . $iter($elem['children'], $depth + 1);
                 case 'unchanged':
                     $value = normalizeValue($elem['value'], $depth);
-                    $result = "$indentStr  $name: $value";
-                    break;
+                    return "$indentStr  $name: $value";
                 case 'deleted':
                     $value = normalizeValue($elem['value'], $depth);
-                    $result = "$indentStr- $name: $value";
-                    break;
+                    return "$indentStr- $name: $value";
                 case 'added':
                     $value = normalizeValue($elem['value'], $depth);
-                    $result = "$indentStr+ $name: $value";
-                    break;
+                    return "$indentStr+ $name: $value";
                 case 'changed':
                     $newValue = normalizeValue($elem['newValue'], $depth);
                     $oldValue = normalizeValue($elem['oldValue'], $depth);
-                    $result = "$indentStr+ $name: $newValue\n$indentStr- $name: $oldValue";
-                    break;
+                    return "$indentStr+ $name: $newValue\n$indentStr- $name: $oldValue";
                 default:
                     $unknownType = $elem['type'];
                     throw new \Exception("Difference type: '$unknownType' not found!\n");
-                    break;
             }
-
-            return $result;
         }, $ast);
 
         $shortIndentStr = makeIndent($depth - 1);

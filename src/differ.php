@@ -17,11 +17,11 @@ function makeAst($firstProperties, $secondProperties)
     );
 
     $ast = array_map(function ($key) use (&$iter, $firstProperties, $secondProperties) {
-        if (!array_key_exists($key, $firstProperties) && array_key_exists($key, $secondProperties)) {
+        if (!array_key_exists($key, $firstProperties)) {
             return ['name' => $key, 'type' => 'added', 'value' => $secondProperties[$key]];
         }
         
-        if (array_key_exists($key, $firstProperties) && !array_key_exists($key, $secondProperties)) {
+        if (!array_key_exists($key, $secondProperties)) {
             return ['name' => $key, 'type' => 'deleted', 'value' => $firstProperties[$key]];
         }
         
@@ -76,6 +76,10 @@ function generateDiff(string $firstPath, string $secondPath, $format = "pretty")
     $firstProperties = parse($firstFileExt, getContent($firstPath));
     $secondProperties = parse($secondFileExt, getContent($secondPath));
 
+    if (!$firstProperties && !$secondProperties) {
+        throw new \Exception("[Parse error] The '$format' is not valid or could not be read");
+    }
+    
     $ast = makeAst($firstProperties, $secondProperties);
 
     switch ($format) {

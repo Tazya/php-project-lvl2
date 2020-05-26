@@ -18,13 +18,12 @@ function normalizeValue($rawValue)
 function renderPlainDiff($ast)
 {
     $iter = function ($ast, $parents = []) use (&$iter) {
-        $filteredAst = array_filter($ast, function ($elem) {
-            return $elem['type'] !== "unchanged";
-        });
+        $filteredAst = array_filter($ast, fn($elem) => $elem['type'] !== "unchanged");
 
         $diffs = array_map(function ($elem) use (&$iter, $parents) {
             $name = $elem['name'];
             $newParents = array_merge($parents, [$name]);
+            $parentsStr = implode('.', $newParents);
 
             switch ($elem['type']) {
                 case 'parent':
@@ -32,24 +31,16 @@ function renderPlainDiff($ast)
                 case 'changed':
                     $newValue = normalizeValue($elem['newValue']);
                     $oldValue = normalizeValue($elem['oldValue']);
-                    $elemDiff = "changed. From '$oldValue' to '$newValue'";
-                    break;
+                    return "Property '$parentsStr' was changed. From '$oldValue' to '$newValue'";
                 case 'deleted':
-                    $elemDiff = 'removed';
-                    break;
+                    return "Property '$parentsStr' was removed";
                 case 'added':
                     $value = normalizeValue($elem['value']);
-                    $elemDiff = "added with value: '$value'";
-                    break;
+                    return "Property '$parentsStr' was added with value: '$value'";
                 default:
                     $unknownType = $elem['type'];
                     throw new \Exception("Difference type: '$unknownType' not found!\n");
             }
-
-            $parentsStr = implode('.', $newParents);
-            $result = "Property '$parentsStr' was $elemDiff";
-
-            return $result;
         }, $filteredAst);
 
         return implode("\n", $diffs);

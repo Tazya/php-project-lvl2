@@ -11,7 +11,7 @@ Command for terminal:
 ```
 composer global require tazya/gendiff:dev-master
 ```  
-PHP version > 7.1.0 is requred   
+PHP version > 7.4.0 is requred   
 
 ## Basic JSON and YAML config files compare
 Use ```gendiff <file1> <file2>``` command to compare configs
