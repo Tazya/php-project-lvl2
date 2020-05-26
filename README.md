@@ -6,8 +6,8 @@
 Gendiff - Cli application for search differences in configuration files  
 
 ## Install
-Composer requires to install
-Command for terminal:  
+Composer requires to install  
+Install command:  
 ```
 composer global require tazya/gendiff:dev-master
 ```  
