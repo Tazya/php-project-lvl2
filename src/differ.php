@@ -75,10 +75,6 @@ function generateDiff(string $firstPath, string $secondPath, $format = "pretty")
 
     $firstProperties = parse($firstFileExt, getContent($firstPath));
     $secondProperties = parse($secondFileExt, getContent($secondPath));
-
-    if (!$firstProperties && !$secondProperties) {
-        throw new \Exception("[Parse error] The '$format' is not valid or could not be read");
-    }
     
     $ast = makeAst($firstProperties, $secondProperties);
 
