@@ -8,7 +8,7 @@ function parse($format, $content)
 {
     switch ($format) {
         case 'json':
-            return json_decode($content, true);
+            return json_decode($content, true, 51, JSON_THROW_ON_ERROR);
         case 'yml':
             return Yaml::parse($content);
         default:
